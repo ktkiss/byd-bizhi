@@ -3,12 +3,14 @@ package com.xiaoke.bizhi
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.webkit.*
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,13 +19,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private val url = "https://byd.xiaoke.name/"
-
-    // 权限请求码
     private val PERMISSION_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        
         // 保持屏幕常亮
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         
@@ -50,9 +50,11 @@ class MainActivity : AppCompatActivity() {
         initWebView()
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "WrongConstant")
     private fun initWebView() {
-        webView = WebView(applicationContext)
+        // 使用 this 而不是 applicationContext
+        webView = WebView(this)
+        
         setContentView(webView, FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
@@ -72,17 +74,13 @@ class MainActivity : AppCompatActivity() {
             setSupportZoom(false)
             mediaPlaybackRequiresUserGesture = false
             
+            // 缓存设置
+            cacheMode = WebSettings.LOAD_DEFAULT
+            
             // 允许混合内容
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             }
-            
-            // 缓存设置
-            cacheMode = WebSettings.LOAD_DEFAULT
-            setAppCacheEnabled(true)
-            
-            // 日志
-            setWebContentsDebuggingEnabled(true)
         }
 
         // WebViewClient
@@ -92,12 +90,8 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
 
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-            }
-
-            override fun onReceivedError(view: WebView?, error: WebResourceRequest?, errorDesc: WebResourceError?) {
-                super.onReceivedError(view, error, errorDesc)
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
             }
         }
 
@@ -109,31 +103,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 下载监听
-        webView.setDownloadListener { downloadUrl, userAgent, contentDisposition, mimeType, contentLength ->
-            // 使用系统浏览器下载或保存
-            handleDownload(downloadUrl, contentDisposition, mimeType)
+        webView.setDownloadListener { downloadUrl, _, _, _, _ ->
+            try {
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                intent.data = android.net.Uri.parse(downloadUrl)
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "无法下载", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // 加载 URL
         webView.loadUrl(url)
     }
 
-    private fun handleDownload(downloadUrl: String?, contentDisposition: String?, mimeType: String?) {
-        downloadUrl?.let {
-            try {
-                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
-                intent.data = android.net.Uri.parse(it)
-                startActivity(intent)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
     private fun requestAllPermissions() {
         val permissions = mutableListOf<String>()
 
-        // 存储权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) 
                 != PackageManager.PERMISSION_GRANTED) {
@@ -143,17 +129,6 @@ class MainActivity : AppCompatActivity() {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) 
                 != PackageManager.PERMISSION_GRANTED) {
                 permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
-                != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
-        }
-
-        // 安装未知来源应用权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!packageManager.canRequestPackageInstalls()) {
-                permissions.add(Manifest.permission.REQUEST_INSTALL_PACKAGES)
             }
         }
 
@@ -172,23 +147,25 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            // 权限已请求
-        }
     }
 
     override fun onResume() {
         super.onResume()
-        webView?.onResume()
+        if (::webView.isInitialized) {
+            webView.onResume()
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        webView?.onPause()
+        if (::webView.isInitialized) {
+            webView.onPause()
+        }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (webView.canGoBack()) {
+        if (::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
         } else {
             super.onBackPressed()
@@ -196,7 +173,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        webView?.destroy()
+        if (::webView.isInitialized) {
+            webView.destroy()
+        }
         super.onDestroy()
     }
 }
