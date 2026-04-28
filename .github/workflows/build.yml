@@ -19,13 +19,18 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
 
-    - name: Build with Gradle
-      run: gradle assembleDebug
+    - name: Download Gradle 8.5
+      run: |
+        wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip -O /tmp/gradle.zip
+        unzip -q /tmp/gradle.zip -d /opt
+        echo "/opt/gradle-8.5/bin" >> $GITHUB_PATH
+
+    - name: Build
+      run: gradle assembleDebug --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
