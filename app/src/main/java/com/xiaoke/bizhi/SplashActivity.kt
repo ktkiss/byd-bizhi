@@ -16,16 +16,14 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         try {
-            // 创建启动页图片
             val imageView = ImageView(this)
             imageView.layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
             
-            // 设置启动页图片
-            val resources = resources
-            val drawableId = resources.getIdentifier("横屏启动页", "drawable", packageName)
+            // 加载启动页图片
+            val drawableId = resources.getIdentifier("splash_landscape", "drawable", packageName)
             if (drawableId != 0) {
                 imageView.setImageResource(drawableId)
             }
@@ -39,7 +37,6 @@ class SplashActivity : AppCompatActivity() {
             }, 2000)
             
         } catch (e: Exception) {
-            // 如果出错，直接跳转
             e.printStackTrace()
             startActivity(Intent(this, MainActivity::class.java))
             finish()
