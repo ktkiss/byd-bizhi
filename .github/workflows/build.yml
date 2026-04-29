@@ -32,7 +32,10 @@ jobs:
         ls -la gradle/wrapper/
 
     - name: Build
-      run: ./gradlew assembleDebug --no-daemon
+      run: |
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon
+
 
     - name: Upload to Release
       env:
