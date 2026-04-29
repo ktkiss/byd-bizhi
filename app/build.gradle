@@ -4,14 +4,14 @@ plugins {
 
 android {
     namespace 'com.xiaoke.bizhi'
-    compileSdk 33
+    compileSdk 30
 
     defaultConfig {
         applicationId "com.xiaoke.bizhi"
-        minSdk 24
-        targetSdk 33
-        versionCode 82
-        versionName "1.0.82"
+        minSdk 21
+        targetSdk 30
+        versionCode 90
+        versionName "1.0.90"
     }
 
     buildTypes {
