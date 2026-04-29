@@ -39,5 +39,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release view v1.0.0 || gh release create v1.0.0 --title "BYD Bizhi v1.0.0" --body "Download APK"
+        gh release view v1.0.0 || gh release create v1.0.0 -t "BYD Bizhi v1.0.0" -n "Download APK"
         gh release upload v1.0.0 app/build/outputs/apk/debug/app-debug.apk --clobber
