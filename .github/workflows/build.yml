@@ -25,6 +25,11 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
+      
+    - name: Download gradle-wrapper.jar
+      run: |
+        curl -L -o gradle/wrapper/gradle-wrapper.jar https://github.com/DeSinc/Repo/raw/master/gradle-wrapper.jar
+        ls -la gradle/wrapper/
 
     - name: Build
       run: ./gradlew assembleDebug --no-daemon
