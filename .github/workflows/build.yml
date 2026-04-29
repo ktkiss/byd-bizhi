@@ -28,7 +28,10 @@ jobs:
       
     - name: Download gradle-wrapper.jar
       run: |
-        curl -L -o gradle/wrapper/gradle-wrapper.jar https://github.com/DeSinc/Repo/raw/master/gradle-wrapper.jar
+        curl -L -o gradle-wrapper.jar https://raw.githubusercontent.com/nicupavel/gradle-wrapper-jar/main/gradle-wrapper.jar
+        mkdir -p gradle/wrapper
+        mv gradle-wrapper.jar gradle/wrapper/
+
         ls -la gradle/wrapper/
 
     - name: Build
