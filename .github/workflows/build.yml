@@ -31,14 +31,12 @@ jobs:
         curl -L -o gradle-wrapper.jar https://raw.githubusercontent.com/nicupavel/gradle-wrapper-jar/main/gradle-wrapper.jar
         mkdir -p gradle/wrapper
         mv gradle-wrapper.jar gradle/wrapper/
-
         ls -la gradle/wrapper/
 
     - name: Build
       run: |
         chmod +x gradlew
         ./gradlew assembleDebug --no-daemon
-
 
     - name: Upload to Release
       env:
