@@ -25,18 +25,18 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
-      
-    - name: Download gradle-wrapper.jar
+
+    - name: Install Gradle
       run: |
-        curl -L -o gradle-wrapper.jar https://raw.githubusercontent.com/nicupavel/gradle-wrapper-jar/main/gradle-wrapper.jar
-        mkdir -p gradle/wrapper
-        mv gradle-wrapper.jar gradle/wrapper/
-        ls -la gradle/wrapper/
+        wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip -O gradle.zip
+        unzip -q gradle.zip
+        export PATH=$PWD/gradle-8.5/bin:$PATH
+        gradle --version
 
     - name: Build
       run: |
-        chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon
+        export PATH=$PWD/gradle-8.5/bin:$PATH
+        gradle assembleDebug --no-daemon
 
     - name: Upload to Release
       env:
