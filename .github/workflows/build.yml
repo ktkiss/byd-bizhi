@@ -13,10 +13,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
@@ -30,12 +30,11 @@ jobs:
       run: |
         wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip -O gradle.zip
         unzip -q gradle.zip
-        export PATH=$PWD/gradle-8.5/bin:$PATH
+        echo "$PWD/gradle-8.5/bin" >> $GITHUB_PATH
         gradle --version
 
     - name: Build
       run: |
-        export PATH=$PWD/gradle-8.5/bin:$PATH
         gradle assembleDebug --no-daemon
 
     - name: Upload to Release
