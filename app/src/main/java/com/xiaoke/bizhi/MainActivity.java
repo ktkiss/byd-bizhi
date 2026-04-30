@@ -36,9 +36,15 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setBuiltInZoomControls(true);
         settings.setDisplayZoomControls(false);
+        settings.setUserAgentString(settings.getUserAgentString().replace("Android", "").replace("Linux; ", "Linux; Android "));
 
         webView.setWebChromeClient(new WebChromeClient());
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+            }
+        });
 
         webView.setDownloadListener(new DownloadListener() {
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
@@ -56,6 +62,8 @@ public class MainActivity extends Activity {
             extension = ".png";
         } else if (mimetype != null && mimetype.contains("gif")) {
             extension = ".gif";
+        } else if (mimetype != null && mimetype.contains("webp")) {
+            extension = ".webp";
         }
         return "wallpaper_" + System.currentTimeMillis() + extension;
     }
@@ -65,6 +73,7 @@ public class MainActivity extends Activity {
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
             request.setMimeType(mimeType != null ? mimeType : "image/*");
             request.addRequestHeader("User-Agent", webView.getSettings().getUserAgentString());
+            request.addRequestHeader("Referer", "https://byd.xiaoke.name/");
             request.setDescription("Downloading Wallpaper");
             request.setTitle(filename);
             request.allowScanningByMediaScanner();
@@ -75,9 +84,10 @@ public class MainActivity extends Activity {
                 values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
                 values.put(MediaStore.Downloads.MIME_TYPE, mimeType != null ? mimeType : "image/*");
                 values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                values.put(MediaStore.Downloads.IS_PENDING, 1);
                 Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (uri != null) {
-                    getContentResolver().openOutputStream(uri).close();
+                    request.setDestinationUri(uri);
                 }
             } else {
                 request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
