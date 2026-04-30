@@ -34,20 +34,16 @@ jobs:
 
     - name: Build
       run: |
-        echo "=== Build Start ==="
-        gradle assembleDebug --no-daemon --info 2>&1 | tee build_output.log
-        echo "=== Build End ==="
-        cat build_output.log | tail -100
+        gradle assembleDebug --no-daemon
 
-    - name: Upload Build Log
-      if: always()
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: build-log
-        path: build_output.log
-        retention-days: 1
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
 
-    - name: Upload to Release
+    - name: Create Release
+      if: github.event_name == 'workflow_dispatch'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
