@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,10 +39,9 @@ public class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient());
 
-        // 娣诲姞JS鎺ュ彛鐢ㄤ簬淇濆瓨鍥剧墖
         webView.addJavascriptInterface(new SaveImageInterface(), "AndroidSave");
 
-        // 璁剧疆涓嬭浇鐩戝惉鍣?        webView.setDownloadListener(new DownloadListener() {
+        webView.setDownloadListener(new DownloadListener() {
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
                 String filename = URLUtil.guessFileName(url, contentDisposition, mimetype);
                 if (filename == null || filename.isEmpty()) {
@@ -56,11 +54,9 @@ public class MainActivity extends Activity {
         webView.loadUrl("https://byd.xiaoke.name/");
     }
 
-    // 涓嬭浇鏂囦欢鍒癉ownloads鐩綍 (鍏煎 Android 10+)
     private void downloadFile(String url, String filename, String mimeType) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10+ 浣跨敤 MediaStore API
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
                 values.put(MediaStore.Downloads.MIME_TYPE, mimeType != null ? mimeType : "image/*");
@@ -69,7 +65,7 @@ public class MainActivity extends Activity {
                 Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (uri != null) {
                     getContentResolver().openOutputStream(uri).close();
-                    // 浣跨敤涓嬭浇绠＄悊鍣?                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                     request.setTitle(filename);
                     DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -77,7 +73,7 @@ public class MainActivity extends Activity {
                     Toast.makeText(getApplicationContext(), "Download started...", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                // Android 9 鍙婁互涓?                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                 request.setMimeType(mimeType);
                 request.addRequestHeader("User-Agent", webView.getSettings().getUserAgentString());
                 request.setDescription("Downloading...");
@@ -95,7 +91,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    // JS鎺ュ彛绫?- 澶勭悊缃戦〉涓殑闀挎寜淇濆瓨
     class SaveImageInterface {
         @JavascriptInterface
         public void saveImage(String url) {
