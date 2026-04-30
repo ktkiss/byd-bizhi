@@ -34,16 +34,26 @@ jobs:
 
     - name: Build
       run: |
-        gradle assembleDebug --no-daemon
+        echo "=== Building ==="
+        gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+        echo "=== Build Complete ==="
+
+    - name: Upload Build Log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build.log
 
     - name: Upload APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
 
     - name: Create Release
-      if: github.event_name == 'workflow_dispatch'
+      if: github.event_name == 'workflow_dispatch' && success()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
